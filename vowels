@@ -25,3 +25,9 @@ int main(){
 printf("Enter a string:\n"); yylex();
 return 0;
 }
+
+
+
+flex vowel.l
+gcc lex.yy.c -o vowel
+./vowel
