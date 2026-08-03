@@ -1,0 +1,180 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+char type[1000][20];
+char token[1000][50];
+int count = 0;
+
+void store(char *t, char *s)
+{
+    strcpy(type[count], t);
+    strcpy(token[count], s);
+    count++;
+}
+
+int isKeyword(char *str)
+{
+    char *keywords[] = {
+        "int","float","char","double",
+        "if","else","while","for",
+        "return","void","main"
+    };
+
+    int n = sizeof(keywords) / sizeof(keywords[0]);
+
+    for(int i = 0; i < n; i++)
+    {
+        if(strcmp(str, keywords[i]) == 0)
+            return 1;
+    }
+
+    return 0;
+}
+
+int main()
+{
+    int ch;
+
+    printf("Enter a C program (Press Ctrl+Z then Enter to finish):\n\n");
+
+    while((ch = getchar()) != EOF)
+    {
+        if(isspace(ch))
+        {
+            continue;
+        }
+
+        else if(isalpha(ch) || ch == '_')
+        {
+            char word[50];
+            int j = 0;
+
+            do
+            {
+                word[j++] = ch;
+                ch = getchar();
+            }
+            while(isalnum(ch) || ch == '_');
+
+            word[j] = '\0';
+
+            if(isKeyword(word))
+                store("Keyword", word);
+            else
+                store("Identifier", word);
+
+            if(ch == EOF)
+                break;
+
+            ungetc(ch, stdin);
+        }
+
+        else if(isdigit(ch))
+        {
+            char num[50];
+            int j = 0;
+
+            do
+            {
+                num[j++] = ch;
+                ch = getchar();
+            }
+            while(isdigit(ch));
+
+            num[j] = '\0';
+
+            store("Number", num);
+
+            if(ch == EOF)
+                break;
+
+            ungetc(ch, stdin);
+        }
+
+        else if(ch=='=')
+        {
+            int next = getchar();
+
+            if(next=='=')
+                store("Operator","==");
+            else
+            {
+                store("Operator","=");
+                if(next!=EOF)
+                    ungetc(next,stdin);
+            }
+        }
+
+        else if(ch=='!')
+        {
+            int next = getchar();
+
+            if(next=='=')
+                store("Operator","!=");
+            else
+            {
+                char x[2]={ch,'\0'};
+                store("Unknown",x);
+                if(next!=EOF)
+                    ungetc(next,stdin);
+            }
+        }
+
+        else if(ch=='>')
+        {
+            int next=getchar();
+
+            if(next=='=')
+                store("Operator",">=");
+            else
+            {
+                store("Operator",">");
+                if(next!=EOF)
+                    ungetc(next,stdin);
+            }
+        }
+
+        else if(ch=='<')
+        {
+            int next=getchar();
+
+            if(next=='=')
+                store("Operator","<=");
+            else
+            {
+                store("Operator","<");
+                if(next!=EOF)
+                    ungetc(next,stdin);
+            }
+        }
+
+        else if(ch=='+' || ch=='-' || ch=='*' || ch=='/')
+        {
+            char op[2]={ch,'\0'};
+            store("Operator",op);
+        }
+
+        else if(ch=='(' || ch==')' || ch=='{' || ch=='}' || ch==';' || ch==',')
+        {
+            char sym[2]={ch,'\0'};
+            store("Special Symbol",sym);
+        }
+
+        else
+        {
+            char unk[2]={ch,'\0'};
+            store("Unknown",unk);
+        }
+    }
+
+    printf("\nRecognized Tokens\n");
+    printf("-----------------------------\n");
+
+    for(int i=0;i<count;i++)
+    {
+        printf("%-18s %s\n", type[i], token[i]);
+    }
+
+    return 0;
+}
