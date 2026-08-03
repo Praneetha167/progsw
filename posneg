@@ -1,0 +1,41 @@
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+int num = 0;
+%}
+
+%%
+
+-?[0-9]+    { num = atoi(yytext); }
+
+[ \t\n]+    ;
+
+.           ;
+
+%%
+
+int yywrap()
+{
+    return 1;
+}
+
+int main()
+{
+    printf("Enter an integer:\n");
+
+    yylex();
+
+    printf("\nResult\n");
+    printf("------------------\n");
+
+    if(num > 0)
+        printf("%d is a Positive Integer\n", num);
+    else if(num < 0)
+        printf("%d is a Negative Integer\n", num);
+    else
+        printf("%d is Zero\n", num);
+
+    return 0;
+}
