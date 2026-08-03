@@ -92,4 +92,7 @@ int main()
     return 0;
 }
 
-
+//to run it
+nano prog2.c
+gcc prog2.c -o prog2
+./prog2
