@@ -1,0 +1,55 @@
+%{
+#include<stdio.h>
+#include<string.h>
+
+char pattern[100];
+char text[5000];
+int len=0;
+%}
+
+%%
+
+.|\n { text[len]=yytext[0]; len++; }
+
+%%
+
+int yywrap()
+{
+    return 1;
+}
+
+int main()
+{
+    int i,count=0,n;
+
+    printf("Enter the pattern: ");
+    scanf("%s",pattern);
+    getchar();
+
+    printf("Enter the text:\n");
+    yylex();
+
+    text[len]='\0';
+    n=strlen(pattern);
+
+    for(i=0;i<=len-n;i++)
+    {
+        if(strncmp(text+i,pattern,n)==0)
+            count++;
+    }
+
+    printf("\nResult\n");
+    printf("-------------------------\n");
+
+    if(count>0)
+    {
+        printf("Pattern Found\n");
+        printf("Number of Occurrences : %d\n",count);
+    }
+    else
+    {
+        printf("Pattern Not Found\n");
+    }
+
+    return 0;
+}
