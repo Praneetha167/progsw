@@ -1,0 +1,78 @@
+*vowels*
+%{
+#include <stdio.h>
+int count = 0;
+%}
+
+%%
+[aAeEiIoOuU]   { count++; }
+.              ;
+\n             { printf("Number of vowels = %d\n", count); return 0; }
+%%
+
+int yywrap()
+{
+    return 1;
+}
+
+int main()
+{
+    printf("Enter a string:\n");
+    yylex();
+    return 0;
+}
+
+*positive/negative*
+%{
+#include<stdio.h>
+%}
+
+%%
+-[0-9]+      { printf("Negative Integer\n"); }
+[0-9]+       { printf("Positive Integer\n"); }
+\n           { return 0; }
+.            ;
+%%
+
+int yywrap()
+{
+    return 1;
+}
+
+int main()
+{
+    printf("Enter an integer: ");
+    yylex();
+    return 0;
+}
+
+*pattern matching*
+%{
+#include<stdio.h>
+#include<string.h>
+
+char pattern[20];
+int count=0;
+%}
+
+%%
+[a-zA-Z]+ { if(strcmp(yytext, pattern)==0) count++; }
+.|\n      ;
+%%
+
+int yywrap()
+{
+    return 1;
+}
+
+int main()
+{
+    printf("Enter the pattern: ");
+    scanf("%s", pattern);
+
+    printf("Enter the text:\n");
+    yylex();
+
+    printf("Number of matches = %d\n", count);
+    return 0;
+}
