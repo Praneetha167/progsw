@@ -1,0 +1,42 @@
+%{
+#include <stdio.h>
+
+int characters = 0;
+int spaces = 0;
+int tabs = 0;
+int reserved = 0;
+%}
+
+%%
+
+int|float|char|double|void|if|else|while|for|return|switch|case|break|continue|do|default|main { reserved++; characters += yyleng; }
+
+\t { tabs++; }
+
+" " { spaces++; }
+
+\n ;
+
+. { characters++; }
+
+%%
+
+int yywrap()
+{
+    return 1;
+}
+
+int main()
+{
+    printf("Enter the input:\n");
+    yylex();
+
+    printf("\nResult\n");
+    printf("-----------------------------\n");
+    printf("Characters     : %d\n", characters);
+    printf("Spaces         : %d\n", spaces);
+    printf("Tabs           : %d\n", tabs);
+    printf("Reserved Words : %d\n", reserved);
+
+    return 0;
+}
