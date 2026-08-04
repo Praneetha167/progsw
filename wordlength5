@@ -1,0 +1,49 @@
+%{
+#include<stdio.h>
+#include<string.h>
+
+int count=0;
+char words[100][50];
+%}
+
+%%
+
+[a-zA-Z]+ {
+    if(yyleng>5 && yyleng<10)
+    {
+        strcpy(words[count],yytext);
+        count++;
+    }
+}
+
+[ \t\n]+ ;
+
+. ;
+
+%%
+
+int yywrap()
+{
+    return 1;
+}
+
+int main()
+{
+    int i;
+
+    printf("Enter the text:\n");
+    yylex();
+
+    printf("\nResult\n");
+    printf("-----------------------------\n");
+    printf("Words with length >5 and <10:\n");
+
+    for(i=0;i<count;i++)
+    {
+        printf("%s\n",words[i]);
+    }
+
+    printf("\nTotal Count : %d\n",count);
+
+    return 0;
+}
