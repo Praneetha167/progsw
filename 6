@@ -1,0 +1,161 @@
+ast.l
+--
+%{
+#include "y.tab.h"
+#include <string.h>
+#include <stdlib.h>
+%}
+
+%%
+
+[a-zA-Z][a-zA-Z0-9]*    {
+                            yylval.str = strdup(yytext);
+                            return ID;
+                         }
+
+[ \t]                   ;
+
+\n                      { return '\n'; }
+
+.                       { return yytext[0]; }
+
+%%
+
+int yywrap()
+{
+    return 1;
+}
+
+--------------------
+
+prog6.y:
+-----
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int yylex();
+void yyerror(char *s);
+
+typedef struct node
+{
+    char value[20];
+    struct node *left;
+    struct node *right;
+} Node;
+
+Node *createNode(char *value, Node *left, Node *right)
+{
+    Node *newNode = (Node *)malloc(sizeof(Node));
+
+    strcpy(newNode->value, value);
+    newNode->left = left;
+    newNode->right = right;
+
+    return newNode;
+}
+
+void printAST(Node *root, int level)
+{
+    int i;
+
+    if(root == NULL)
+        return;
+
+    for(i = 0; i < level; i++)
+        printf("  ");
+
+    printf("%s\n", root->value);
+
+    printAST(root->left, level + 1);
+    printAST(root->right, level + 1);
+}
+%}
+
+%union
+{
+    char *str;
+    void *node;
+}
+
+%token <str> ID
+%type <node> expr term factor
+
+%%
+
+input:
+      expr '\n'
+      {
+          printf("\nAbstract Syntax Tree:\n");
+          printAST((Node *)$1, 0);
+      }
+      ;
+
+expr:
+      expr '+' term
+      {
+          $$ = createNode("+", (Node *)$1, (Node *)$3);
+      }
+      |
+      term
+      {
+          $$ = $1;
+      }
+      ;
+
+term:
+      term '*' factor
+      {
+          $$ = createNode("*", (Node *)$1, (Node *)$3);
+      }
+      |
+      factor
+      {
+          $$ = $1;
+      }
+      ;
+
+factor:
+      '(' expr ')'
+      {
+          $$ = $2;
+      }
+      |
+      ID
+      {
+          $$ = createNode($1, NULL, NULL);
+      }
+      ;
+
+%%
+
+void yyerror(char *s)
+{
+    printf("Invalid expression\n");
+}
+
+int main()
+{
+    printf("Enter an expression: ");
+    yyparse();
+
+    return 0;
+}
+
+----------------------
+yacc -d prog6.y
+flex prog6.l
+gcc lex.yy.c y.tab.c -o prog6 -lfl
+./prog6
+
+-----
+a+b*c
+
+Abstract Syntax Tree:
++
+  a
+  *
+    b
+    c
+
