@@ -1,0 +1,85 @@
+expr.l
+--
+%{
+#include "y.tab.h"
+%}
+
+%%
+
+[0-9]+              { return NUMBER; }
+[a-zA-Z][a-zA-Z0-9]* { return ID; }
+[ \t]               ;
+\n                  { return '\n'; }
+.                   { return yytext[0]; }
+
+%%
+
+int yywrap()
+{
+    return 1;
+}
+
+
+
+expr.y
+---
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+int yylex();
+void yyerror(char *s);
+%}
+
+%token NUMBER ID
+
+%%
+
+input:
+    expr '\n'       { printf("Valid arithmetic expression\n"); }
+    ;
+
+expr:
+    expr '+' term
+    | expr '-' term
+    | term
+    ;
+
+term:
+    term '*' factor
+    | term '/' factor
+    | factor
+    ;
+
+factor:
+    NUMBER
+    | ID
+    | '(' expr ')'
+    ;
+
+%%
+
+void yyerror(char *s)
+{
+    printf("Invalid arithmetic expression\n");
+}
+
+int main()
+{
+    printf("Enter an arithmetic expression: ");
+    yyparse();
+    return 0;
+}
+
+----------
+
+
+flex expr.l
+yacc -d expr.y
+gcc lex.yy.c y.tab.c -o expr -lfl
+./expr
+-------------
+
+Enter an arithmetic expression: a+b*10
+Valid arithmetic expression
+
