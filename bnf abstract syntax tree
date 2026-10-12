@@ -1,0 +1,122 @@
+YACC program (ast.y)
+-------------------------
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+int yylex();
+void yyerror(char *s);
+
+struct node {
+    char value;
+    struct node *left, *right;
+};
+
+struct node *root;
+
+struct node* createNode(char value, struct node *left, struct node *right)
+{
+    struct node *n = malloc(sizeof(struct node));
+    n->value = value;
+    n->left = left;
+    n->right = right;
+    return n;
+}
+
+void display(struct node *n, int level)
+{
+    if (n == NULL) return;
+
+    display(n->right, level + 1);
+
+    for (int i = 0; i < level; i++)
+        printf("   ");
+
+    printf("%c\n", n->value);
+
+    display(n->left, level + 1);
+}
+%}
+
+%union {
+    char ch;
+    struct node *ptr;
+}
+
+%token <ch> ID
+%type <ptr> E T F
+
+%left '+' '-'
+%left '*' '/'
+
+%%
+
+input : E '\n' { root = $1; }
+      ;
+
+E : E '+' T { $$ = createNode('+', $1, $3); }
+  | E '-' T { $$ = createNode('-', $1, $3); }
+  | T       { $$ = $1; }
+  ;
+
+T : T '*' F { $$ = createNode('*', $1, $3); }
+  | T '/' F { $$ = createNode('/', $1, $3); }
+  | F       { $$ = $1; }
+  ;
+
+F : '(' E ')' { $$ = $2; }
+  | ID        { $$ = createNode($1, NULL, NULL); }
+  ;
+
+%%
+
+void yyerror(char *s)
+{
+    printf("Invalid expression\n");
+}
+
+int main()
+{
+    printf("Enter expression: ");
+    if (yyparse() == 0) {
+        printf("\nAbstract Syntax Tree:\n");
+        display(root, 0);
+    }
+    return 0;
+}
+------------------------------------------------------------------
+Lex program (ast.l)
+--------------------------
+
+%{
+#include "y.tab.h"
+%}
+
+%%
+
+[a-zA-Z]    { yylval.ch = yytext[0]; return ID; }
+[ \t]       ;
+\n          { return '\n'; }
+.           { return yytext[0]; }
+
+%%
+
+int yywrap()
+{
+    return 1;
+}
+--------------------------------------------
+yacc -d ast.y
+lex ast.l
+gcc y.tab.c lex.yy.c -o ast -ll
+./ast
+------------------------------------------
+Enter expression: a+b*c
+
+Abstract Syntax Tree:
+        c
+    *
+        b
++
+    a
