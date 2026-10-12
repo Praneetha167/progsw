@@ -1,0 +1,72 @@
+YACC program (parser.y)
+------------------
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+int yylex(void);
+void yyerror(const char *s);
+%}
+
+%token ID NUM
+%left '+'
+%left '*'
+
+%%
+
+expr : expr '+' expr
+     | expr '*' expr
+     | '(' expr ')'
+     | ID
+     | NUM
+     ;
+
+%%
+
+void yyerror(const char *s)
+{
+    printf("Invalid expression\n");
+}
+
+int main()
+{
+    printf("Enter an arithmetic expression: ");
+    if (yyparse() == 0)
+        printf("Valid expression\n");
+    return 0;
+}
+------------------------------------------------------------
+Lex program (lexer.l)
+-------------------------------
+
+%{
+#include "y.tab.h"
+%}
+
+%%
+
+[0-9]+              { return NUM; }
+[a-zA-Z][a-zA-Z0-9]* { return ID; }
+[+*()]              { return yytext[0]; }
+[ \t\n]+             ;
+.                   { return yytext[0]; }
+
+%%
+
+int yywrap()
+{
+    return 1;
+}
+---------------------------
+yacc -d parser.y
+lex lexer.l
+gcc y.tab.c lex.yy.c -o parser
+./parser
+-------------------------------------------
+Sample output
+Enter an arithmetic expression: a+b*c
+Valid expression
+
+
+Enter an arithmetic expression: a+*b
+Invalid expression
