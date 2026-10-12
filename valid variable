@@ -1,0 +1,69 @@
+Lex program (lexer.l)
+  ----------------
+
+%{
+#include "y.tab.h"
+%}
+
+%%
+
+[a-zA-Z_][a-zA-Z0-9_]*    { return VALID; }
+[ \t\n]                  ;
+.                        { return INVALID; }
+
+%%
+
+int yywrap()
+{
+    return 1;
+}
+-------------------------------------------
+
+
+2. YACC program (parser.y)
+
+%{
+#include <stdio.h>
+int yylex();
+void yyerror(const char *s);
+%}
+
+%token VALID INVALID
+
+%%
+
+input:
+      VALID   { printf("Valid Variable\n"); }
+    | INVALID { printf("Invalid Variable\n"); }
+    ;
+
+%%
+
+void yyerror(const char *s)
+{
+    printf("Invalid Variable\n");
+}
+
+int main()
+{
+    printf("Enter a variable name: ");
+    yyparse();
+    return 0;
+}
+  --------------------------------------------------
+
+  yacc -d parser.y
+lex lexer.l
+gcc y.tab.c lex.yy.c -o variable -ll
+./variable
+  ----------------------------------
+
+  Example 1 — Valid
+Enter a variable name: total123
+Valid Variable
+
+
+
+Example 2 — Invalid
+Enter a variable name: 123total
+Invalid Variable
