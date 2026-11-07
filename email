@@ -1,0 +1,55 @@
+
+%{
+#include <stdio.h>
+int yylex();
+int yyerror(char *s);
+%}
+
+%token EMAIL
+
+%%
+
+S : EMAIL '\n'
+    {
+        printf("Valid Email Address\n");
+    }
+  ;
+
+%%
+
+int main()
+{
+    printf("Enter Email Address: ");
+    yyparse();
+    return 0;
+}
+
+int yyerror(char *s)
+{
+    printf("Invalid Email Address\n");
+    return 0;
+}
+
+-------------------------------------
+
+
+%{
+#include "y.tab.h"
+%}
+
+%%
+
+[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,} {
+    return EMAIL;
+}
+
+\n      { return '\n'; }
+.       { return yytext[0]; }
+
+%%
+
+int yywrap()
+{
+    return 1;
+}
+
