@@ -1,0 +1,80 @@
+
+#include <stdio.h>
+#include <string.h>
+
+char productions[10][10];
+char follow[10];
+int n, count = 0;
+
+void add(char c)
+{
+    int i;
+    for (i = 0; i < count; i++)
+    {
+        if (follow[i] == c)
+            return;
+    }
+    follow[count++] = c;
+}
+
+void findFollow(char symbol)
+{
+    int i, j;
+
+    if (symbol == 'E')
+        add('$');
+
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; productions[i][j] != '\0'; j++)
+        {
+            if (productions[i][j] == symbol)
+            {
+                if (productions[i][j + 1] == '+' ||
+                    productions[i][j + 1] == '*')
+                {
+                    add(productions[i][j + 1]);
+                }
+
+                if (productions[i][j + 1] == ')')
+                    add(')');
+
+                if (productions[i][j + 1] == '\0' &&
+                    productions[i][0] != symbol)
+                {
+                    findFollow(productions[i][0]);
+                }
+            }
+        }
+    }
+}
+
+int main()
+{
+    int i;
+    char symbols[] = {'E', 'T', 'F'};
+
+    n = 6;
+
+    strcpy(productions[0], "E=E+T");
+    strcpy(productions[1], "E=T");
+    strcpy(productions[2], "T=T*F");
+    strcpy(productions[3], "T=F");
+    strcpy(productions[4], "F=(E)");
+    strcpy(productions[5], "F=id");
+
+    for (i = 0; i < 3; i++)
+    {
+        count = 0;
+        findFollow(symbols[i]);
+
+        printf("FOLLOW(%c) = { ", symbols[i]);
+
+        for (int j = 0; j < count; j++)
+            printf("%c ", follow[j]);
+
+        printf("}\n");
+    }
+
+    return 0;
+}
